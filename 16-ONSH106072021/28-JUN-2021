@@ -1,0 +1,10 @@
+In one-to-many association we declare one side of the association as collection of objects of other entity class which is in one-to-many association with my class.
+There are 3 types of collections are supported by hibernate/jpa to represent association relationship.
+  1. set = set is a collection class, that supports storing multiple objects within it. it is an  collection class that supports unique objects only and determines the uniqueness of an object by c  omparing the equals() & hashCode().
+   set doesnt preserves insertion order of the elements, while accessing the elements back from set, we might get the elements in any order
+   in your association relationship if we want to eliminate duplication child objects.
+
+  2. list = indexed based collection, here insertion order of the elements are preserved. if we want to preserve the insertion order of the child elements we need to use list collection in association relationship.
+
+  3. map
+  

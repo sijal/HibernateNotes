@@ -1,0 +1,303 @@
+How can relationship between the tables exists?
+  One-To-One
+  One-To-Many | Many-To-One
+  Many-To-Many
+
+How can Objects can have relationship with each other?
+  Inheritance
+  Association
+
+Object Relational Mapping Technology
+How to map data of a relational database tables into objects and viceversa. The guidelines are provided by orm methodology. The orm technology has provided guidelines of how to represent relationtable relationships in java classes.
+  
+
+account
+account_no  account_holder_nm   account_type  balance  branch_no
+
+branch
+branch_no  branch_nm   bank_nm   ifsc_code  contact_no   
+
+Account
+ accountNo
+ accountHolderName
+ accountType
+ balance
+ Branch branch;
+
+Branch
+ branchNo
+ branchName
+ bankName
+ ifscCode
+ contactNo
+ Set<Account> accounts;
+----------------------------------------------------------------------------------------------------------------
+Hibernate/Jpa is an ORM Technology Frameworks/Api
+The adopted orm technology principles and provided apis for accessing the relational database data interms of java class objects.
+
+  
+How to access the data of a relational database table interms of java class objects?
+  
+account
+--------
+account_no  account_holder_nm  account_type  mobile_no  email_address  balance
+
+branch
+------
+branch_no  branch_nm  bank_nm  ifsc_code  contact_no  location
+
+
+
+
+To access the data of the account table in java application interms of object we need a java class representing the structure of the database table to hold the records of data of that table.
+
+The class that is created based on the structure of the database table to hold the records of the table into its objects is called "Entity" class.
+  
+class Account {
+  int accountNo;
+  String accountHolderName;
+  String accountType;
+  String mobileNo;
+  String emailAddress;
+  double balance;
+  
+  // accessors
+}  
+  
+
+
+The class in which we write the code for accessing the data from underlying source system, such classes are called "Data Access Object" or "Accessors"
+  
+class AccountAccessor {
+  public Account findAccount(int accountNo) {
+    Connection con = null;
+    PreparedStatement pstmt = null;
+    ResultSet rs = null;
+    Account account = null;
+    AccountMapper accountMapper = null;
+    
+    try {
+      /*Class.forName(driverName);
+      con = DriverManager.getConnection(url, un, pwd);*/
+      con = ConnectionManager.newConnection();
+      
+      pstmt = con.preparedStatment("select account_no, account_holder_nm, account_type, mobile_no, email_address, balance from account where account_no = ?");
+      pstmt.setInt(1, accountNo);
+      accountMapper = new AccountMapper();
+      
+      rs = pstmt.executeQuery();
+      if(rs.next()) {
+        //account = accountMapper.mapResultSetRecordToAccount(rs);
+        account = new Account();
+        account.setAccountNo(rs.getInt(1));
+        account.setAccountHolderName(rs.getString(2));
+        account.setAccountType(rs.getString(3));
+        account.setMobileNo(rs.getString(4));
+        account.setEmailAddress(rs.getString(5));
+        account.setBalance(rs.getDouble(6));        
+      }
+      
+    }catch(SqlException | ClassNotFoundException e) {
+      // throw e
+    }finally {
+     // close all the resources 
+    }
+    return account;
+  }
+  
+  public Account findAccountByMobileNo(String mobileNo) {
+    ResultSet rs = null;    
+    Connection con = null;
+    Account account = null;
+    PreparedStatement pstmt = null;
+    AccountMapper accountMapper = null;
+    
+    try {
+      con = ConnectionManager.newConnection();
+      ptmt = con.preparedStatement("select account_no, account_holder_nm, account_type, mobile_no, email_address, balance from account where mobile_no = ?");
+      ptmt.setString(1, mobileNo);
+      
+      rs = pstmt.executeQuery();
+      accountMapper = new AccountMapper();
+      
+      if(rs.next()) {
+        account = accountMapper.mapResultSetRecordToAccount(rs);
+      }
+    }catch(SqlException | ClassNotFoundException e) {
+      throw e;
+    }finally {
+      // close the resources
+    }
+  }
+}  
+
+
+class Branch {
+  int branchNo;
+  String branchName;
+  String bankName;
+  String ifscCode;
+  String contactNo;
+  String location;
+  
+  // accessors
+}  
+  
+class BranchAccessor {
+  public Branch findBranch(int branchNo) {    
+    ResultSet rs = null;
+    Branch branch = null;
+    Connection con = null;
+    PreparedStatement pstmt = null;
+    BranchMapper branchMapper = null;
+    
+    try {
+      Class.forName(driverClassname);
+      
+      //con = ConnectionManager.newConnection();
+      
+      pstmt = con.preparedStatement("select branch_no, branch_nm, bank_nm, ifsc_code, contact_no, location from branch where branch_no = ?");
+      pstmt.setInt(1, branchNo);
+      rs = pstmt.executeQuery();
+      branchMapper = new BranchMapper();
+      
+      if(rs.next()) {
+        branch = branchMapper.mapResultSetToBranch(rs); 
+      }
+    }catch(SqlException | ClassNotFoundException e) {
+      // throw e
+    }finally {
+      // close the resources
+    }
+    return branch;
+  }
+}  
+  
+class ConnectionManager {        
+  
+  public static Connection newConnection() {
+    Connection con = null;
+    Properties props = null;    
+    
+    try {
+      props = new Properties();
+      props.load(ConnectionManager.class.getClassLoader().getResourceAsStream("db.properties"));
+      
+      Class.forName(props.getProperty("db.driverClassname"));
+      con = DriverManager.getConnection(props.getProperty("db.url"), props.getProperty("db.username"), props.getProperty("db.password"));
+      con.setAutoCommit(false);      
+    }catch(SqlException | ClassNotFoundException e) {
+      // throw e
+    }
+    return con;
+  }
+}  
+
+db.properties
+---------------
+db.driverClassname=com.mysql.cj.jdbc.Driver
+db.url=jdbc:mysql://localhost:3306/db
+db.username=root
+db.password=root
+
+  
+ConnectionManager should create how many objects of Connection?
+1) It has to create only 1 connection for the entire application? 
+2) It should create 1 connection per 1 operation we want to perform on the database?
+  
+ConnectionManager.getConnection() = should always open a new connection and return it, because per each database operation we want to perform, we should create a new connection and at the end of the operation we should close it.  
+  
+Connection object should not be singleton (anti-pattern).
+----------------------------------------------------------------------------------------------------------------
+  
+Per a table - One Entity Class (Principle)
+---------------------------------------------
+  
+Whenever we query the data from table the columns of data we get from the table would always same whereever the query the data from that table.  To hold the data of the table we can dont need several entity class, if we create a entity class representing the structure of the table, always we can use the same class to hold data of the table irrespective of where/how many times we access the data from that table.
+So this proves one table requires only one entity class.
+  
+From the above we can understand whenever we queried the data for a particular table always we populate the data of the table into its corresponding/same entity class only. so that code for gathering and populating the data of the table into the class is being duplicated across all over the classes of my application whereever am queries the data from that table.
+So to avoid the above problem use Mapper classes.
+  
+Mapper class takes one record of the table interms of resultset and should write the code for converting that record into corresponding object.
+  
+class AccountMapper {
+  // read a record and store the columns into corresponding attributes of the account object
+  public Account mapResultSetRecordToAccount(ResultSet rs) {
+    // important: we should not iterate, give record we need to convert into object
+    Account account = null;
+    
+    account = new Account();
+    account.setAccountNo(rs.getInt("account_no"));
+    account.setAccountHolderName(rs.getString("account_holder_nm"));
+    account.setAccountType(rs.getString("account_type"));
+    account.setMobileNo(rs.getString("mobile_no"));
+    account.setEmailAddress(rs.getString("email_address"));
+    account.setBalance(rs.getDouble("balance"));
+    
+    return account;
+  }
+}  
+
+class BranchMapper {
+  public Branch mapResultSetRecordToBranch(ResultSet rs) {
+    Branch branch = null;
+    
+    branch = new Branch();
+    branch.setBranchNo(rs.getInt("branch_no"));
+    branch.setBranchName(rs.getString("branch_nm"));
+    branch.setBankName(rs.getString("bank_nm"));
+    branch.setIfscCode(rs.getString("ifsc_code"));
+    branch.setContactNo(rs.getString("contact_no"));
+    branch.setLocation(rs.getString("location"));
+    return branch;
+  }
+}  
+  
+across all the mapper classes the functionality is getting duplicated, that means in  all the mappers we are extracting the data from the resultset record and binding the data into entity class object, here from mapper to mapper the table from where the record is coming and object to which we are binding the data will change, but the rest of the logic is same.
+  
+Accessor:-  
+Properties columnsToAttributesProps = new Properties();
+columnsToAttributesProps.put("account_no","accountNo");
+columnsToAttributesProps.put("account_holder_nm","accountHolderName");
+columnsToAttributesProps.put("account_type","accountType");
+columnsToAttributesProps.put("mobile_no","mobileNo");
+columnsToAttributesProps.put("email_address","emailAddress");
+columnsToAttributesProps.put("balance","balance");
+
+pstmt = con.preparedStatement("select * from account where account_no = ?");
+// substitute
+rs = pstmt.executeQuery();
+if(rs.next()) {
+  GenericMapper.mapResultSetRecordToEntity(rs, Account.class, columnsToAttributesProps);
+}
+  
+
+class GenericMapper {
+  public static Object mapResultSetRecordToEntity(ResultSet rs, Class<?> entityClass, Properties columnsToAttributesProperties) {
+    
+  }
+}  
+  
+  
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  

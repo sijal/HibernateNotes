@@ -1,0 +1,11 @@
+What is one-to-one association between classes?
+An entity object is associated with only one entity object of another class then it is said to be in one-to-one association with each other.
+  (or)
+
+In a class if we hold only one object of another class and even viceversa then the entities are said to be in one-to-one association with each other.
+  
+How to model an entity classes with one-to-one association into database tables?
+There are 2 ways are there
+  1. direct one-to-one
+  2. one-to-many as one-to-one
+

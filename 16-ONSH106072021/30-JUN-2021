@@ -1,0 +1,4 @@
+one-to-many map collection
+If there are additional column/data to be populated, out of the relationship then we go for Map. For eg.. when a workorder has been assigned to a contractor then billing_no/contract_no will be generated, here the billing_no/contract_no doesnt have existence unless a workorder has been assigned to contractor, so such data being generated out of the relationship can be maintained using Map based association.
+  
+  

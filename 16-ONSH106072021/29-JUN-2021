@@ -1,0 +1,43 @@
+How many types of collections are supported by Hibernate/Jpa Frameworks in modelling an one-to-many association between the entity classes?
+They support 3 types of collections.
+  1. Set
+  2. List
+  3. Map
+  
+#1 Set = if we want to store unique child objects for a given parent, then we choose Set collection.
+#2 List = if we want to preserve insertion order of the child entity objects in retrieving them, then we use List based collection
+#3 Map = if we want to store additional data out of the relationship will use Map.
+  
+class Member {
+  int memberNo;
+  String memberName;
+  String projectName;
+  Date startDate;  
+  String role;
+  int experience;
+    
+} 
+
+class Task {
+  int taskNo;
+  String title;
+  String description;
+  int duration;
+  String status;
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
